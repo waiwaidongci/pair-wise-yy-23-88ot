@@ -1,3 +1,15 @@
-export function StatCard({ label, value }: { label: string; value: string | number }) {
-  return <div className="stat"><span>{label}</span><strong>{value}</strong></div>;
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  hint?: string;
+}
+
+export function StatCard({ label, value, hint }: StatCardProps) {
+  return (
+    <div className="stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {hint && <em>{hint}</em>}
+    </div>
+  );
 }

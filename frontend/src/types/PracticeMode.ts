@@ -1,3 +1,2 @@
-export const PracticeMode = ["CELL_TO_TEXT","TEXT_TO_CELL","LISTENING","MIXED"] as const;
-export type PracticeMode = (typeof PracticeMode)[number];
-export const PracticeModeText: Record<PracticeMode, string> = Object.fromEntries(PracticeMode.map((value) => [value, value.replace(/_/g, " ")])) as Record<PracticeMode, string>;
+// 枚举常量的唯一事实来源在 constants/PracticeMode；此处仅做类型层再导出
+export { PracticeMode, PracticeModeText } from "../constants/PracticeMode";

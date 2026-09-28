@@ -1,8 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { parseDots } from "../utils/brailleDots";
 
-export function useBraillePattern<T>(rows: T[] = []) {
-  const [page, setPage] = useState(1);
-  const pageSize = 8;
-  const pageRows = useMemo(() => rows.slice((page - 1) * pageSize, page * pageSize), [rows, page]);
-  return { page, setPage, pageSize, pageRows, total: rows.length };
+// 将点位串解析为可读的点阵状态，并提供按点位的查询
+export function useBraillePattern(pattern: string) {
+  const dots = useMemo(() => parseDots(pattern), [pattern]);
+  return {
+    dots,
+    dotSet: useMemo(() => new Set(dots), [dots]),
+    hasDot: (dot: number) => dots.includes(dot),
+    pattern: dots.join(",")
+  };
 }

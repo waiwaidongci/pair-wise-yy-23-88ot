@@ -1,3 +1,10 @@
-export function StatusBadge({ value }: { value: string }) {
-  return <span className={"badge " + String(value).toLowerCase().replace(/_/g, "-")}>{String(value).replace(/_/g, " ")}</span>;
+interface StatusBadgeProps {
+  value: string;
+  tone?: "neutral" | "good" | "warn" | "bad";
+}
+
+export function StatusBadge({ value, tone = "neutral" }: StatusBadgeProps) {
+  return (
+    <span className={`badge tone-${tone} ${String(value).toLowerCase().replace(/_/g, "-")}`}>{value}</span>
+  );
 }

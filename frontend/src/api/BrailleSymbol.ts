@@ -1,21 +1,23 @@
-import { mockData } from "../mocks/seedData";
+import { idbGetAll, idbPut } from "./db";
 import type { BrailleSymbol } from "../types/BrailleSymbol";
-
-const endpoint = "/api/braille-symbol";
+import { logWrite } from "../utils/logger";
+import { LocalDataError } from "../utils/errors";
+import { ERROR_CODES } from "../constants/errorCodes";
 
 export async function listBrailleSymbol(): Promise<BrailleSymbol[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
+  try {
+    return await idbGetAll<BrailleSymbol>("brailleSymbol");
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
   }
-  return [...(mockData.brailleSymbol as unknown as BrailleSymbol[])];
 }
 
-export async function saveBrailleSymbol(payload: BrailleSymbol) {
-  console.info("save BrailleSymbol", payload);
-  return payload;
+export async function saveBrailleSymbol(payload: BrailleSymbol): Promise<BrailleSymbol> {
+  try {
+    await idbPut("brailleSymbol", payload);
+    logWrite("BrailleSymbol", payload.id ? "UPDATE" : "CREATE", { id: payload.id, letter: payload.letter });
+    return payload;
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
+  }
 }

@@ -1,5 +1,21 @@
-import { StatusBadge } from "./StatusBadge";
+import type { ReactNode } from "react";
 
-export function PracticePanel({ title = "PracticePanel", value = "READY" }: { title?: string; value?: string }) {
-  return <div className="shared-widget"><strong>{title}</strong><StatusBadge value={value} /></div>;
+interface PracticePanelProps {
+  title?: string;
+  children: ReactNode;
+  aside?: ReactNode;
+}
+
+export function PracticePanel({ title, children, aside }: PracticePanelProps) {
+  return (
+    <section className="panel practice-panel">
+      {(title || aside) && (
+        <header className="practice-panel-head">
+          {title ? <h2>{title}</h2> : <span />}
+          {aside}
+        </header>
+      )}
+      {children}
+    </section>
+  );
 }

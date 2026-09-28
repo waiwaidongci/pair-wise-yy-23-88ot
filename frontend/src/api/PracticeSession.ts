@@ -1,21 +1,41 @@
-import { mockData } from "../mocks/seedData";
+import { idbGetAll, idbPut } from "./db";
 import type { PracticeSession } from "../types/PracticeSession";
-
-const endpoint = "/api/practice-session";
+import { logWrite } from "../utils/logger";
+import { LocalDataError } from "../utils/errors";
+import { ERROR_CODES } from "../constants/errorCodes";
 
 export async function listPracticeSession(): Promise<PracticeSession[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
+  try {
+    return await idbGetAll<PracticeSession>("practiceSession");
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
   }
-  return [...(mockData.practiceSession as unknown as PracticeSession[])];
 }
 
-export async function savePracticeSession(payload: PracticeSession) {
-  console.info("save PracticeSession", payload);
-  return payload;
+export async function createPracticeSession(payload: PracticeSession): Promise<PracticeSession> {
+  try {
+    await idbPut("practiceSession", payload);
+    logWrite("PracticeSession", "CREATE", {
+      id: payload.id,
+      lessonId: payload.lesson_id,
+      mode: payload.mode
+    });
+    return payload;
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
+  }
+}
+
+export async function updatePracticeSession(payload: PracticeSession): Promise<PracticeSession> {
+  try {
+    await idbPut("practiceSession", payload);
+    logWrite("PracticeSession", "FINISH", {
+      id: payload.id,
+      score: payload.score,
+      mistakes: payload.mistake_count
+    });
+    return payload;
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
+  }
 }

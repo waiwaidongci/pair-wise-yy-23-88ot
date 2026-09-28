@@ -1,21 +1,23 @@
-import { mockData } from "../mocks/seedData";
+import { idbGetAll, idbPut } from "./db";
 import type { Lesson } from "../types/Lesson";
-
-const endpoint = "/api/lesson";
+import { logWrite } from "../utils/logger";
+import { LocalDataError } from "../utils/errors";
+import { ERROR_CODES } from "../constants/errorCodes";
 
 export async function listLesson(): Promise<Lesson[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
+  try {
+    return await idbGetAll<Lesson>("lesson");
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
   }
-  return [...(mockData.lesson as unknown as Lesson[])];
 }
 
-export async function saveLesson(payload: Lesson) {
-  console.info("save Lesson", payload);
-  return payload;
+export async function saveLesson(payload: Lesson): Promise<Lesson> {
+  try {
+    await idbPut("lesson", payload);
+    logWrite("Lesson", payload.id ? "UPDATE" : "CREATE", { id: payload.id, title: payload.title });
+    return payload;
+  } catch (cause) {
+    throw new LocalDataError(ERROR_CODES.LOCAL_DB_UNAVAILABLE, String(cause));
+  }
 }
