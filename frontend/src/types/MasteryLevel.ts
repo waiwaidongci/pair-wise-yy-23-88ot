@@ -1,3 +1,7 @@
-export const MasteryLevel = ["NEW","LEARNING","FAMILIAR","MASTERED"] as const;
-export type MasteryLevel = (typeof MasteryLevel)[number];
-export const MasteryLevelText: Record<MasteryLevel, string> = Object.fromEntries(MasteryLevel.map((value) => [value, value.replace(/_/g, " ")])) as Record<MasteryLevel, string>;
+import * as MasteryLevelConstants from "../constants/MasteryLevel";
+
+export const MasteryLevel = MasteryLevelConstants.MasteryLevel;
+export const MasteryLevelText = MasteryLevelConstants.MasteryLevelText;
+export const masteryOf = MasteryLevelConstants.masteryOf;
+export const MASTERY_LEVEL_OPTIONS = MasteryLevelConstants.MASTERY_LEVEL_OPTIONS;
+export type MasteryLevel = MasteryLevelConstants.MasteryLevel;

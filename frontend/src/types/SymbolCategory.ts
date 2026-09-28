@@ -1,3 +1,6 @@
-export const SymbolCategory = ["LETTER","NUMBER","PUNCTUATION","CONTRACTION"] as const;
-export type SymbolCategory = (typeof SymbolCategory)[number];
-export const SymbolCategoryText: Record<SymbolCategory, string> = Object.fromEntries(SymbolCategory.map((value) => [value, value.replace(/_/g, " ")])) as Record<SymbolCategory, string>;
+import * as SymbolCategoryConstants from "../constants/SymbolCategory";
+
+export const SymbolCategory = SymbolCategoryConstants.SymbolCategory;
+export const SymbolCategoryText = SymbolCategoryConstants.SymbolCategoryText;
+export const SYMBOL_CATEGORY_OPTIONS = SymbolCategoryConstants.SYMBOL_CATEGORY_OPTIONS;
+export type SymbolCategory = SymbolCategoryConstants.SymbolCategory;

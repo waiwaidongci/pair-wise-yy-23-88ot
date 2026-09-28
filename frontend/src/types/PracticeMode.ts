@@ -1,3 +1,6 @@
-export const PracticeMode = ["CELL_TO_TEXT","TEXT_TO_CELL","LISTENING","MIXED"] as const;
-export type PracticeMode = (typeof PracticeMode)[number];
-export const PracticeModeText: Record<PracticeMode, string> = Object.fromEntries(PracticeMode.map((value) => [value, value.replace(/_/g, " ")])) as Record<PracticeMode, string>;
+import * as PracticeModeConstants from "../constants/PracticeMode";
+
+export const PracticeMode = PracticeModeConstants.PracticeMode;
+export const PracticeModeText = PracticeModeConstants.PracticeModeText;
+export const PRACTICE_MODE_OPTIONS = PracticeModeConstants.PRACTICE_MODE_OPTIONS;
+export type PracticeMode = PracticeModeConstants.PracticeMode;

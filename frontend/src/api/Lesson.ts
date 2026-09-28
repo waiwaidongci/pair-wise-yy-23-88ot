@@ -1,21 +1,29 @@
-import { mockData } from "../mocks/seedData";
+import { getAll, put } from "./database";
 import type { Lesson } from "../types/Lesson";
-
-const endpoint = "/api/lesson";
+import { ServiceError } from "../utils/errors";
+import { logEntity } from "../utils/logger";
 
 export async function listLesson(): Promise<Lesson[]> {
-  if (typeof fetch !== "undefined" && endpoint.startsWith("/api") && false) {
-    try {
-      const res = await fetch(endpoint);
-      if (res.ok) return await res.json();
-    } catch {
-      // Local mock fallback keeps the UI available during offline review.
-    }
+  try {
+    const rows = await getAll<Lesson>("lesson");
+    return rows.sort((a, b) => a.id - b.id);
+  } catch (cause) {
+    throw cause instanceof ServiceError ? cause : new ServiceError("STORAGE_UNAVAILABLE", cause);
   }
-  return [...(mockData.lesson as unknown as Lesson[])];
 }
 
-export async function saveLesson(payload: Lesson) {
-  console.info("save Lesson", payload);
-  return payload;
+export async function saveLesson(payload: Lesson): Promise<Lesson> {
+  try {
+    const saved = await put<Lesson>("lesson", payload);
+    logEntity("Lesson", payload.id ? "update" : "create", {
+      id: saved.id,
+      title: saved.title,
+      stage: saved.stage,
+      symbolCount: saved.symbol_ids.length,
+      fields: "title/symbol_ids/stage/estimated_minutes/unlock_rule"
+    });
+    return saved;
+  } catch (cause) {
+    throw cause instanceof ServiceError ? cause : new ServiceError("STORAGE_UNAVAILABLE", cause);
+  }
 }

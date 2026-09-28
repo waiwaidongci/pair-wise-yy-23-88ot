@@ -1,54 +1,79 @@
-import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 import { routes } from "./router/routes";
-import { mockData } from "./mocks/seedData";
-import { StatusBadge } from "./components/common/StatusBadge";
-import { StatCard } from "./components/common/StatCard";
+import { useHashRoute } from "./router/useHashRoute";
+import { useIndexedDbStore } from "./hooks/useIndexedDbStore";
+import { LearnPage } from "./pages/LearnPage";
+import { PracticePage } from "./pages/PracticePage";
+import { MistakesPage } from "./pages/MistakesPage";
+import { ProgressPage } from "./pages/ProgressPage";
 import "./styles.css";
 
-function Page({ name }: { name: string }) {
-  const entities = Object.entries(mockData);
-  const total = useMemo(() => entities.reduce((sum, [, rows]) => sum + rows.length, 0), [entities]);
-  return <main className="page">
-    <section className="page-head">
-      <div>
-        <p className="eyebrow">braille-trainer</p>
-        <h1>{name}</h1>
-      </div>
-      <StatusBadge value="LOCAL_DATA" />
-    </section>
-    <section className="metrics">
-      <StatCard label="核心模型" value={entities.length} />
-      <StatCard label="本地记录" value={total} />
-      <StatCard label="共享枚举" value={3} />
-    </section>
-    <section className="workbench">
-      <div className="panel wide">
-        <h2>业务数据</h2>
-        <div className="table">
-          {entities.map(([key, rows]) => <article key={key} className="row">
-            <strong>{key}</strong><span>{rows.length} 条</span><StatusBadge value={Object.values(rows[0] ?? {})[1] as string ?? "READY"} />
-          </article>)}
-        </div>
-      </div>
-      <div className="panel">
-        <h2>联动检查</h2>
-        <p>页面、store、API、构造器、日志模板和枚举常量均按提示词拆分，适合评审跨文件修改能力。</p>
-      </div>
-    </section>
-  </main>;
+/** Material UI 主题：主色与项目墨绿/赭金配色保持一致。 */
+const theme = createTheme({
+  palette: { primary: { main: "#274335" }, secondary: { main: "#d39b46" } },
+  typography: { fontFamily: '"Aptos","PingFang SC",system-ui,sans-serif' }
+});
+
+function pageOf(path: string) {
+  switch (path) {
+    case "/learn":
+      return <LearnPage />;
+    case "/practice":
+      return <PracticePage />;
+    case "/mistakes":
+      return <MistakesPage />;
+    case "/progress":
+      return <ProgressPage />;
+    default:
+      return <LearnPage />;
+  }
 }
 
 function App() {
-  const [active, setActive] = useState<string>(routes[0]?.route ?? "/dashboard");
-  const current = routes.find((route) => route.route === active) ?? routes[0];
-  return <div className="shell">
-    <aside>
-      <div className="brand">盲文点字学习训练器</div>
-      <nav>{routes.map((route) => <button key={route.route} className={active === route.route ? "active" : ""} onClick={() => setActive(route.route)}>{route.name}</button>)}</nav>
-    </aside>
-    <Page name={current?.name ?? "工作台"} />
-  </div>;
+  const [active, navigate] = useHashRoute();
+  const db = useIndexedDbStore();
+
+  return (
+    <div className="shell">
+      <aside>
+        <div className="brand">盲文点字学习训练器</div>
+        <nav>
+          {routes.map((route) => (
+            <button
+              key={route.route}
+              className={active === route.route ? "active" : ""}
+              onClick={() => navigate(route.route)}
+            >
+              {route.name}
+            </button>
+          ))}
+        </nav>
+        <p className="side-note">数据保存在本机浏览器 IndexedDB</p>
+      </aside>
+      {!db.ready ? (
+        <main className="page">
+          <section className="panel boot-panel">
+            <h1>正在装载本机课程数据…</h1>
+            <p className="muted">首次打开会把点字字符与课程写入本机存储。</p>
+          </section>
+        </main>
+      ) : (
+        pageOf(active)
+      )}
+      {db.ready && db.errors.length > 0 && (
+        <div className="error-banner" role="alert">
+          部分本机数据读取失败：{db.errors.join("；")}
+          <button type="button" className="btn" onClick={() => void db.reload()}>重试</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <App />
+  </ThemeProvider>
+);
